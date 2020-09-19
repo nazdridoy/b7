@@ -1,0 +1,30 @@
+#!/usr/bin/bash
+regex='((25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])(:[0-9]*)+'
+ok=1
+pxy="$1"
+if [[ $pxy =~ $regex ]]
+then
+        ip=`echo $pxy | awk -F: '{print $1}'`                             
+        port=`echo $pxy | awk -F: '{print $2}'`
+else
+        echo 'enter proxy.( Ex: IP:Port )'                                                                                   
+        read pxy
+            if [[ $pxy =~ $regex ]]
+            then
+                    ip=`echo $pxy | awk -F: '{print $1}'`                             
+                    port=`echo $pxy | awk -F: '{print $2}'`
+            else
+                        echo 'wrong input!!'
+                        ok=0
+            fi
+fi
+
+if [[ $ok -ne 0 ]]
+then
+    echo $ip
+    echo $port
+    tail -n 1 /etc/proxychains.conf | wc -c | xargs -I {} truncate /etc/proxychains.conf -s -{}
+    echo "socks4 $ip $port" >> /etc/proxychains.conf
+else
+    echo "no change made to /etc/proxychains.conf"
+fi
